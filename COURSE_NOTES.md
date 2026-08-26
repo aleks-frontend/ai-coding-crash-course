@@ -32,3 +32,29 @@ Personal scratchpad for notes, gotchas, and things worth remembering as I go thr
 Writing `/model` gives you a list of available models:
 - up/down arrows change model
 - left/right can change effort
+- control+Shift+G (jump to git message)
+
+## Project commands
+
+- npm run reset (reset to a certain lesson)
+- npm run cherry-pick (resets to a certain lesson but keeps your custom changes)
+- npm run pull (pull latest course updates)
+
+## Database migrations
+
+![alt text](image.png)
+
+Migrate === Updates the database to how the source code says it should look
+
+![alt text](image-1.png)
+
+npm run db:migrate
+
+## Reseting to a clean slate
+
+Before the course we will reset all our Claude settings and back it up.
+
+I didn't do a full cleaning of my existing projects (think of doing that after the end of the course).
+
+[IMPORTANT] Restore command: "restore my Claude Code config 
+  from ~/agent-config-backup-2026-08-26"
