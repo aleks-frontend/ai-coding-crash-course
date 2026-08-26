@@ -29,3 +29,6 @@ Personal scratchpad for notes, gotchas, and things worth remembering as I go thr
 ## Notes
 
 <!-- Add lesson notes, insights, and questions below as you go. -->
+Writing `/model` gives you a list of available models:
+- up/down arrows change model
+- left/right can change effort
