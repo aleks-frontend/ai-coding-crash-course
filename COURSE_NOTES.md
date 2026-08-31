@@ -105,4 +105,21 @@ Used the request logger (`npm run request-logger`) to see the actual traffic bet
 | Tool Result | The output of executing that tool |
 | Turn | The entire cycle from user message to agent response, including all tool calls and results |
 
+### Sessions and the Context
+
+**Context** = all the available information the agent has access to at request time (instructions, parameters, scope, tool calls, conversation so far). It gets turned into tokens, and the model does next-token prediction on top of it to produce its response.
+
+- **Context window** = the max tokens a model can receive in a single request. It's an arbitrary number picked by the model's developers based on what their infra can handle (e.g. GPT 5.6 Sol: 1.1M tokens, Gemini 3 Pro: 1M tokens, GPT 5.2 Chat Latest: 128k tokens).
+- Go over the context window and **the request just fails** — no output tokens at all. Nothing gets silently trimmed/dropped for you.
+- You're billed for every token sent, every request, so keep context relevant — irrelevant text costs money AND can distract/confuse the model, same as it would a human.
+- **The context window never starts at zero when using a harness.** The harness (agentic framework/wrapper) injects a **system prompt** right from the start: what tools are available, high-level instructions, what role the agent should inhabit. Different harnesses send very different amounts of this text.
+- **Session** = a continuous conversation with an agent where context builds up over multiple turns (turn 1: 5 model provider requests, turn 2: 3 requests, turn 3: 4 requests... all part of the same session, each new request carrying the full history so far).
+- Having the word "session" matters because it's the unit you act on: you can **clear** it (start fresh), **compact** it (shrink but keep going), or set it aside and come back later.
+
+| Term | Definition |
+|---|---|
+| Context | All the available information the agent has access to, including instructions, parameters, scope, and tool calls |
+| Context Window | The maximum amount of context (in tokens) that a model can receive in a single request |
+| System Prompt | The initial instructions given to the agent by the harness, defining its role and behavior |
+| Session | A continuous conversation with an agent, where context builds up over multiple turns |
 
