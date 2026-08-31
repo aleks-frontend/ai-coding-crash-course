@@ -140,3 +140,18 @@ This produces two zones within a single context window:
 - The 1M-token advertised window ≠ usable smart-zone size. It exists because (a) it's a good headline, and (b) some use cases (pure retrieval over long text) don't need peak reasoning. Coding work does need the smart zone.
 - **It's a slope, not a cliff** — quality degrades gradually as context fills, not suddenly at 150k. Treat ~150k tokens in a session as the signal to start planning a bail-out: hand off the work, compact, or otherwise get back into a fresh smart zone rather than grinding on inside the dumb zone.
 
+### Statelessness
+
+The **model** itself is completely stateless — it processes a single request based only on the context it's handed, and retains nothing between requests. All the "memory" of a conversation actually lives one level up.
+
+| Concept | Stateful? | Scope | Responsibility |
+|---|---|---|---|
+| Model | Stateless | N/A | Processes a single request based on provided context |
+| Harness | Stateful | Within one session | Remembers all messages and session history |
+| Environment | Stateful | Indefinite | Persists files, changes, and data on disk |
+
+- The **harness** carries the session's message history forward across turns, resending it all each request — but only for the life of that session. **Clear** the session and the harness forgets everything.
+- The **environment** (filesystem, etc.) is the only thing that's *always* stateful — save a file, then clear the session, and the file is still there.
+- People who want the agent to "remember stuff about them" over time are really asking for state in a stateless system — that's what memory systems bolt on. But the simpler, usually-sufficient answer is: **save it in the environment** (i.e. the codebase) rather than reaching for a separate memory system. Quoting Mario Zechner (creator of Pi): *"my codebase is my memory system."*
+- Default to statelessness where you can — it's simpler and tends to work better than bolting memory onto the agent itself.
+
