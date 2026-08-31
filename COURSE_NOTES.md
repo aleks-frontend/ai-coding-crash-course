@@ -123,3 +123,20 @@ Used the request logger (`npm run request-logger`) to see the actual traffic bet
 | System Prompt | The initial instructions given to the agent by the harness, defining its role and behavior |
 | Session | A continuous conversation with an agent, where context builds up over multiple turns |
 
+### Smart Zone / Dumb Zone
+
+A typical agent turn uses ~18k tokens, but models advertise context windows up to 1M — so why not just use all of it? Because the model doesn't reason over that text for free: every token added has to be related to every other token already in context (an **attention relationship**), and that count scales quadratically, not linearly.
+
+- 2 tokens → 1 relationship, 3 tokens → 3, 4 → 6, 5 → 10.
+- At scale: 1,000 tokens ≈ 1 million relationships, 10,000 tokens ≈ 100 million, 100,000 tokens ≈ 10 billion.
+- The more relationships the model has to track, the worse its **attention** performs — this is **attention degradation**. It's the underlying mechanism and doesn't go away as models improve; only the thresholds shift.
+
+This produces two zones within a single context window:
+
+- **Smart zone** (early in the context window) — agent handles planning, complex builds, strategic decisions well.
+- **Dumb zone** (context filled up) — agent still "works" but gets sloppy even on simple stuff (basic file writes, closing issues, writing specs). Also costs more per request since you're sending huge amounts of tokens each time.
+
+- Current (debated, moves with model quality) consensus: dumb zone starts around **150k tokens** — up from ~100–120k in earlier course versions. Expect this number to keep climbing as models improve.
+- The 1M-token advertised window ≠ usable smart-zone size. It exists because (a) it's a good headline, and (b) some use cases (pure retrieval over long text) don't need peak reasoning. Coding work does need the smart zone.
+- **It's a slope, not a cliff** — quality degrades gradually as context fills, not suddenly at 150k. Treat ~150k tokens in a session as the signal to start planning a bail-out: hand off the work, compact, or otherwise get back into a fresh smart zone rather than grinding on inside the dumb zone.
+
