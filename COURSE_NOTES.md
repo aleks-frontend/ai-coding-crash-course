@@ -206,3 +206,17 @@ Running Claude Code from VS Code's integrated terminal for this course.
 - **`Ctrl+S` to stash a prompt** — holds a half-written prompt aside so you can send something else first (e.g. a quick correction), then rehydrates the stashed draft back into the text box when you're ready. Useful for giving feedback mid-thought without losing your original message.
 - **Pasting images** — copy an image (including screenshots) and paste it directly into the text box; a "pasting" indicator confirms it's attached. The image becomes part of the prompt, so the agent can analyze screenshots/mockups without a separate upload step.
 
+### Running Bash Commands
+
+Three ways to run bash commands with the agent, depending on whether you want it to see the output:
+
+- **Bash mode (`!` prefix)** — runs a command and puts its output straight into the agent's context. Use when the agent needs to act on the result (e.g. `! npm run typecheck` so it can fix the reported errors).
+- **Backgrounding (Ctrl+B)** — for long-running processes that never exit on their own (dev servers). Started in bash mode, then backgrounded with Ctrl+B; output streams to a local file and a background task entry appears under the status line (view, or stop with X). Lets the agent debug against live server logs — try something in the UI or send a curl request, then check what the server logged — without blocking the session.
+- **Suspending (Ctrl+Z, then `fg`)** — suspends the whole agent so you can run a command it never sees, preserving its state. `fg` brings it back exactly as it was. Useful for commands whose output you don't want in context at all.
+
+| Goal | Approach | Shortcut |
+|---|---|---|
+| Agent needs to see the output | Bash mode | `!` prefix |
+| Long-running process (dev servers) | Background it | Ctrl+B after `!` command |
+| Command hidden from the agent | Suspend the agent | Ctrl+Z, then `fg` to return |
+
