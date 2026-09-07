@@ -185,3 +185,24 @@ A common harness technique to fight smart-zone/dumb-zone constraints: **delegate
 - **Recursive subagents**: a subagent can spawn its own subagents (harness-dependent — some allow only one level deep, some allow full recursion).
 - Net effect: subagent tokens are still spent, just isolated from the orchestrator's window — the benefit is context efficiency for the main agent, not free computation.
 
+---
+
+## Getting to know Claude
+
+### Managing Your Claude Code Session
+
+Running Claude Code from VS Code's integrated terminal for this course.
+
+- Just run `claude` in the terminal to open the chat UI — type a message like any chat app (e.g. "hello, how are you?").
+- `/terminal-setup` — sets up key bindings, notably **Shift+Enter** for multi-line prompts. Run once; may need manual setup on WSL.
+- `/usage` — shows remaining allowance: current session usage, weekly limit, current usage against it. Once you hit the limit you can't use the agent until it resets. Press Escape to exit back to chat.
+- `/context` — visualizes what's filling the context window: system prompt tokens, skills tokens, message tokens, and total context window size. Useful for debugging what's eating your budget.
+- `/clear` — empties the conversation history, giving a fresh context window. Confirms the model is **stateless**: once cleared, the agent has no memory of what came before (e.g. ~9,000 tokens with history → ~6,600 tokens after clear). Ctrl+C twice also opens a brand-new session with no memory.
+- **Escape** — interrupts the agent mid-run, canceling everything it was doing, and leaves an `interrupted` marker so you can redirect it (conversation stays intact, unlike `/clear`). Say "carry on" to resume if you interrupt by accident.
+
+### Prompting in the Terminal
+
+- **`@` file picker** — press `@` to fuzzy-search and pull files into your prompt (arrow keys to browse, tab/return to select, repeat for multiple files). Files are read straight into the context window on the first request — no extra tool call needed. Great for handing the agent a spec or config file to follow directly.
+- **`Ctrl+S` to stash a prompt** — holds a half-written prompt aside so you can send something else first (e.g. a quick correction), then rehydrates the stashed draft back into the text box when you're ready. Useful for giving feedback mid-thought without losing your original message.
+- **Pasting images** — copy an image (including screenshots) and paste it directly into the text box; a "pasting" indicator confirms it's attached. The image becomes part of the prompt, so the agent can analyze screenshots/mockups without a separate upload step.
+
