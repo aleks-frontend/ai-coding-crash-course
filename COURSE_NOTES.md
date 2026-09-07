@@ -174,3 +174,14 @@ Two flavors:
   - **No** → factuality problem → load sourced info into context.
   - **Yes** → faithfulness problem → clear context to reduce attention degradation.
 
+### Subagents
+
+A common harness technique to fight smart-zone/dumb-zone constraints: **delegate work to another agent** instead of doing everything in the main agent's context.
+
+- A session's context breaks into phases (e.g. system prompt, exploration, implementation). Making any phase cheaper (fewer tokens) means less money spent and more room left in the smart zone before attention degradation kicks in — but cutting corners on exploration risks worse info feeding the implementation phase.
+- **Subagent** = an agent spawned by the main agent (the **orchestrator**) to do a task — e.g. deep codebase exploration — and report back just a summary. Like a senior dev asking a junior to research something and report findings: the subagent burns its own tokens digging in, but only the summary lands in the orchestrator's context.
+- Subagents can be spawned **in parallel** — multiple at once, each researching something different, all reporting back to the orchestrator.
+- Each subagent can be configured independently: different **system prompt**, different **model**, different **effort** level. Lets you send a cheap/fast subagent at mechanical search and a stronger one at a hard question.
+- **Recursive subagents**: a subagent can spawn its own subagents (harness-dependent — some allow only one level deep, some allow full recursion).
+- Net effect: subagent tokens are still spent, just isolated from the orchestrator's window — the benefit is context efficiency for the main agent, not free computation.
+
