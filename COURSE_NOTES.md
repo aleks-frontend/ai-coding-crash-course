@@ -155,3 +155,22 @@ The **model** itself is completely stateless — it processes a single request b
 - People who want the agent to "remember stuff about them" over time are really asking for state in a stateless system — that's what memory systems bolt on. But the simpler, usually-sufficient answer is: **save it in the environment** (i.e. the codebase) rather than reaching for a separate memory system. Quoting Mario Zechner (creator of Pi): *"my codebase is my memory system."*
 - Default to statelessness where you can — it's simpler and tends to work better than bolting memory onto the agent itself.
 
+### Hallucination
+
+**Hallucination** = confidently wrong model output. It's the main thing to guard against — it can produce broken code, steer the product in the wrong direction, or recommend insecure/outdated APIs. Symptom of the dumb zone, but can occasionally show up in the smart zone too.
+
+Two flavors:
+
+| Type | What it is | Cause | Fix |
+|---|---|---|---|
+| **Factuality** | Invented/wrong facts (nonexistent function, wrong API signature, fake citation) | Lack of **parametric knowledge** — info not in context, so the model dredges from training | Load **contextual knowledge** — never trust an unsourced LLM, give it a source |
+| **Faithfulness** | Model ignores, drifts from, or misuses info that *is* in its context | **Attention degradation** in the dumb zone — too much context to find what's relevant | Clear the context window, get back to the smart zone |
+
+- **Parametric knowledge** = knowledge baked into the model's weights during training. It's stored as "fuzzy vibes," not a lookup table — compressing terabytes of data into a few billion numbers loses detail, so retrieval from memory is unreliable even for pre-cutoff facts.
+- **Knowledge cutoff** = the point where a model's training data ends. Can't be patched — updating a model's knowledge requires retraining from scratch. Anything after the cutoff, or anything fuzzy from before it, is a factuality risk.
+- Example: asked without web search, Claude Opus gave outdated X API pricing tiers from training data — a factuality hallucination. Web search corrected it by supplying contextual knowledge.
+- Contextual knowledge reduces factuality hallucinations but isn't a full cure, since faithfulness hallucinations can still happen even with the right info sitting right in context.
+- **Decision tree** when you spot a hallucination: was the info in the context window?
+  - **No** → factuality problem → load sourced info into context.
+  - **Yes** → faithfulness problem → clear context to reduce attention degradation.
+
