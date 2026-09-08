@@ -220,3 +220,42 @@ Three ways to run bash commands with the agent, depending on whether you want it
 | Long-running process (dev servers) | Background it | Ctrl+B after `!` command |
 | Command hidden from the agent | Suspend the agent | Ctrl+Z, then `fg` to return |
 
+### Permissions
+
+Claude Code is strict by default about what the agent can do without asking — a safeguard against an agent with unlimited power doing something dangerous by accident (e.g. deleting the whole filesystem).
+
+**The approval flow** — a safe command (`echo hello`) just runs. A riskier one (`pnpm typecheck`) triggers a **permission request** showing the exact command, why it wants to run it, and three choices:
+
+1. **Allow once** — permitted this one time only.
+2. **Allow always** — permitted from now on for this project (adds a rule like `Bash(pnpm typecheck)` to settings).
+3. **Reject and suggest** — deny it and propose an alternative command instead (e.g. reject `pnpm typecheck`, suggest `npx tsc`; approving that with "allow always" adds `Bash(npx tsc *)`).
+
+**Where permissions live** — `.claude/settings.local.json`, editable by hand ahead of time:
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(pnpm typecheck)"]
+  }
+}
+```
+
+- Wildcards widen a rule: `"Bash(pnpm *)"` allows all `pnpm` commands.
+- A `deny` array blocks a command outright regardless of what the agent (or a classifier) thinks — e.g. `"Bash(git push *)"` to always block pushes. This is the only reliable way to hard-block something; a prompt instruction is not a permission rule.
+
+**Not just Bash** — web search and web fetches need permission too (e.g. approving a fetch adds `WebFetch(domain:reactrouter.com)`), so the agent can back up local reasoning with real docs instead of guessing.
+
+**Sharing with a team** — `settings.local.json` is gitignored, so approvals stay local to you. Rename it to `settings.json` and check it in, and anyone who clones the repo and runs the agent inherits the same allowed/denied commands immediately — no manual setup per teammate.
+
+**Auto mode vs. manual** — the mode selector (bottom-left, cycle with Shift+Tab) offers Manual, Edits, Plan, and **Auto** mode:
+
+| Mode | Behavior |
+|---|---|
+| Manual | Every non-trivial command needs explicit approval |
+| Auto | An LLM classifier (likely Claude Haiku) judges each command's safety from the conversation and runs it without asking if deemed safe |
+
+- Auto mode costs a little time/tokens per command (the classifier call itself), but removes most manual interruptions.
+- The classifier is imperfect in both directions — it can allow things you'd rather it didn't (e.g. a database migration) and block things that are actually fine (e.g. creating a GitHub issue) — but reliably blocks the always-bad stuff (`rm -rf` on your filesystem).
+- **`settings.json` is checked first, before the classifier runs** — so explicit allow/deny rules still take priority and save the classifier round-trip for common commands, even in auto mode.
+- Set auto mode as the default via `/config` → **default permission mode**.
+
