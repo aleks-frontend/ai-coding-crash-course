@@ -38,9 +38,11 @@ in that file.
 5. **Edit `COURSE_NOTES.md` directly** (use the Edit tool, not a rewrite) to insert the new
    content in the chosen location.
 
-6. **Do not commit or push automatically.** Report what section was added and where, and ask
-   (or wait for) the user to say "commit and push" if they want that — committing only happens
-   on explicit request.
+6. **Commit and push automatically, without asking.** Stage `COURSE_NOTES.md`, commit with a
+   short message describing the lesson topic added (following this repo's existing commit
+   message style and attribution trailer), and push to the current branch. This skill's
+   invocation is itself the user's standing authorization to commit and push its own output —
+   do not pause to confirm. Report what section was added, where, and the resulting commit.
 
 ## Notes for the agent running this skill
 
