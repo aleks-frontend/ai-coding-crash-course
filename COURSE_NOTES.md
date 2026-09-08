@@ -259,3 +259,16 @@ Claude Code is strict by default about what the agent can do without asking — 
 - **`settings.json` is checked first, before the classifier runs** — so explicit allow/deny rules still take priority and save the classifier round-trip for common commands, even in auto mode.
 - Set auto mode as the default via `/config` → **default permission mode**.
 
+---
+
+## Fundamentals
+
+### Starting Context: Resetting Your Config
+
+Before doing any real work with an agent, check what's already sitting in the context window by default — default configs (MCP servers from claude.ai like Figma, Gmail, Google Calendar, Google Drive, Slack, Todoist, Zapier; built-in skills) can add a surprising amount of bloat before you've typed a single real message.
+
+- **Reset to defaults**: rename `.claude/settings.json` → `settings-backup.json`, and `.claude/skills` → `skills-backup`. This strips custom config back to the harness's defaults so you can see the true baseline.
+- **`/context`** — run it before sending any real messages to see the baseline breakdown (system prompt, system tools, MCP tools, skills, messages, total). Example from the lesson: default config ≈ **23k tokens** baseline; after restoring a trimmed custom config (fewer MCP servers, fewer skills) ≈ **6.6k tokens** — a ~16k token difference before any real work starts.
+- **Why this matters isn't cost** — it's [smart zone](#smart-zone--dumb-zone) space. Every token spent on config bloat is a token not available for the agent to actually reason in. Trimming config doesn't change the size of the context window itself; it changes how much of that window is free for reasoning versus already consumed by setup.
+- Practical habit: periodically audit your own `.claude` config (and other people's, when reviewing) for MCP servers and skills that aren't actually needed for the work at hand.
+
