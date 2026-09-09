@@ -200,6 +200,29 @@ Running Claude Code from VS Code's integrated terminal for this course.
 - `/clear` — empties the conversation history, giving a fresh context window. Confirms the model is **stateless**: once cleared, the agent has no memory of what came before (e.g. ~9,000 tokens with history → ~6,600 tokens after clear). Ctrl+C twice also opens a brand-new session with no memory.
 - **Escape** — interrupts the agent mid-run, canceling everything it was doing, and leaves an `interrupted` marker so you can redirect it (conversation stays intact, unlike `/clear`). Say "carry on" to resume if you interrupt by accident.
 
+### Showing Context Usage in the Status Line
+
+Claude Code doesn't surface context-window usage by default — `/context` is a manual, one-off check. For an always-visible number, use [`ccstatusline`](https://www.npmjs.com/package/ccstatusline), a community tool that reads Claude Code's session data and renders a custom status line.
+
+Setup:
+
+1. `mkdir -p ~/.config/ccstatusline`
+2. Create `~/.config/ccstatusline/settings.json` configuring the widgets you want (e.g. a bold yellow `context-length` token count, a dimmed `context-percentage` in parentheses right after it — `"merge": "no-padding"` glues adjacent widgets together, `"rawValue": true` strips labels down to plain numbers).
+3. In `~/.claude/settings.json`, add (preserving any existing keys, e.g. the `permissions.deny` / `disable*` bloat-cutting settings from earlier):
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "npx ccstatusline@latest"
+  }
+}
+```
+
+4. Fully quit and reopen Claude Code (not just `/clear`).
+
+Result: status line shows something like `186.2k (17.3%)`, live-updating as context fills — a lightweight companion to the [smart zone / dumb zone](#smart-zone--dumb-zone) awareness habit, so you don't have to remember to run `/context` manually.
+
 ### Prompting in the Terminal
 
 - **`@` file picker** — press `@` to fuzzy-search and pull files into your prompt (arrow keys to browse, tab/return to select, repeat for multiple files). Files are read straight into the context window on the first request — no extra tool call needed. Great for handing the agent a spec or config file to follow directly.
