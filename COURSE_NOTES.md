@@ -272,3 +272,51 @@ Before doing any real work with an agent, check what's already sitting in the co
 - **Why this matters isn't cost** — it's [smart zone](#smart-zone--dumb-zone) space. Every token spent on config bloat is a token not available for the agent to actually reason in. Trimming config doesn't change the size of the context window itself; it changes how much of that window is free for reasoning versus already consumed by setup.
 - Practical habit: periodically audit your own `.claude` config (and other people's, when reviewing) for MCP servers and skills that aren't actually needed for the work at hand.
 
+### Killing Bloat: Cutting the System Prompt Payload
+
+Continuation of the baseline-audit habit above, but going deeper: using the **request logger** to see the literal payload sent on every request, then cutting it down via `~/.claude/settings.json`.
+
+**Workflow for each settings change**: edit `~/.claude/settings.json` → quit the agent → relaunch → send `Hello!` → run `/context` → check the logs for what changed.
+
+**Inspecting the raw payload** (via `request-logger/logs/*.md`):
+- `<system-prompt>` — environment section (OS/shell/cwd), context-management instructions, recent git commits.
+- `<tools>` — every tool's full JSON schema ships on every request. Expect 70+ tools, many obscure (`CronCreate`, `DesignSync`, `Workflow`) and verbose (redundant commit-message/PR-template text).
+- `mcp__` — MCP connector tools (Figma, Gmail, Slack, Google Drive, etc.) ship whether or not you use them.
+- "following skills are available" — the skills catalogue, 15-20+ entries with descriptions, built-in + project-specific mixed together.
+
+**Key principle**: denying a tool via `permissions.deny` doesn't just block it at runtime — it **removes the tool's definition from the system prompt entirely**, saving tokens on every single request, not just a one-time cost.
+
+**Settings.json bloat-cutting sequence** (results from the lesson, starting at a fresh baseline of **68.3k tokens**):
+
+| Setting | Effect | Running total |
+|---|---|---|
+| `"disableClaudeAiConnectors": true` | Drops all claude.ai MCP connectors | 47k |
+| `"disableWorkflows": true` | Drops dynamic multi-subagent workflow config | 39k |
+| `"disableBundledSkills": true` | Drops built-in skills (deep research, data viz, artifact design, etc.) | 37.1k |
+| `"disableArtifact": true` | Drops the Artifacts feature | 33.1k |
+| `permissions.deny` list (see below) | Removes unused tool definitions from the prompt | 21.6k |
+| Add `AskUserQuestion` to the deny list | Removes its ~130-line tool definition | ~19.9k |
+
+Tools worth denying if unused: `NotebookEdit`, `DesignSync`, `CronCreate`/`CronDelete`/`CronList`, `EnterPlanMode`/`ExitPlanMode`, `PushNotification`, `RemoteTrigger`, `ReportFindings`, `ScheduleWakeup`. `AskUserQuestion` is a judgment call — some like its UI, others find it intrusive; denying it is a straight token cut, not a correctness issue.
+
+Full example config:
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "NotebookEdit", "DesignSync", "CronCreate", "CronDelete", "CronList",
+      "EnterPlanMode", "ExitPlanMode", "PushNotification", "RemoteTrigger",
+      "ReportFindings", "ScheduleWakeup", "AskUserQuestion"
+    ]
+  },
+  "disableClaudeAiConnectors": true,
+  "disableWorkflows": true,
+  "disableBundledSkills": true,
+  "disableArtifact": true
+}
+```
+
+- The specific list is agent-specific (this is all Claude Code) — the transferable habit is: **audit your harness's payload, deny/disable whatever you don't actually use**, since it's pure cost (tokens + potential distraction) for zero benefit.
+- None of this shrinks the context *window* — it shrinks how much of the window is pre-consumed by setup before you've typed a word, leaving more room in the [smart zone](#smart-zone--dumb-zone).
+
