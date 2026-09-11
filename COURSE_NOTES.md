@@ -185,6 +185,26 @@ A common harness technique to fight smart-zone/dumb-zone constraints: **delegate
 - **Recursive subagents**: a subagent can spawn its own subagents (harness-dependent — some allow only one level deep, some allow full recursion).
 - Net effect: subagent tokens are still spent, just isolated from the orchestrator's window — the benefit is context efficiency for the main agent, not free computation.
 
+### Codebase Exploration: Direct Reads vs. Subagents
+
+Same exploration prompt, run twice against this repo, produced two different strategies — a live demo of why exploration approach matters for context management.
+
+**Surface skim first.** A plain "look around" prompt reads only the README, finds `package.json` via `find . -name package.json -not -path '*/node_modules/*'`, then reads it plus the request-logger's own `package.json`/README to build a tech stack table. 4 tool results, ~26.1k tokens — cheap, but shallow (no actual source code read).
+
+**Escalating to "read a ton of source code"** made the agent go deep, but *non-deterministically* it can do this one of two ways:
+
+| Strategy | What happens | Orchestrator's final context |
+|---|---|---|
+| **Direct reads** | No subagents spawned — the agent reads schema, routes, services, etc. straight into its own context window, in parallel tool calls | Grows by the full size of everything it read — pushes toward the dumb zone fast |
+| **Subagents ("use subagents")** | Orchestrator gets a quick structural map, then splits work into scoped areas (e.g. data layer, service layer, routes/UI, request-logger) and dispatches one subagent per area in parallel | ~65.1k tokens total, despite ~200k+ tokens burned collectively across the subagents |
+
+- Explicitly saying "use subagents" reliably nudges the agent toward delegating instead of reading everything itself.
+- Subagent token spend is real and can be large per subagent (one areas's subagent alone used 159k tokens on a big routes/UI layer) — the savings are entirely about what lands in the *orchestrator's* window, not total tokens spent.
+- **What a good subagent report looks like**: not raw file contents, but a dense synthesis — e.g. a full route map grouped by area (public, auth, purchase/redeem flows, instructor, admin, team, API), notable patterns/personas, key components, and (critically) **a list of key file paths** so the orchestrator can go read something specific later without re-exploring from scratch.
+- These reports arrive in the transcript as system notifications (automated background task events), not as something the orchestrator writes itself.
+- Deep exploration this way can even surface deliberate quirks planted in the codebase (e.g. a service file that's intentionally sloppier than its siblings) — a sign the subagent actually read and compared code rather than skimming.
+- **Practical takeaway**: for small lookups, direct reads are fine and simpler. For "read a ton of source code across a large repo" style requests, prefer scoped subagents per area — it's the difference between the orchestrator absorbing everything it touches versus absorbing only a distilled, file-path-annotated summary.
+
 ---
 
 ## Getting to know Claude
