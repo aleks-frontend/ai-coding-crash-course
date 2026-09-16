@@ -205,6 +205,30 @@ Same exploration prompt, run twice against this repo, produced two different str
 - Deep exploration this way can even surface deliberate quirks planted in the codebase (e.g. a service file that's intentionally sloppier than its siblings) — a sign the subagent actually read and compared code rather than skimming.
 - **Practical takeaway**: for small lookups, direct reads are fine and simpler. For "read a ton of source code across a large repo" style requests, prefer scoped subagents per area — it's the difference between the orchestrator absorbing everything it touches versus absorbing only a distilled, file-path-annotated summary.
 
+### Clear, Compact, Handoff, or Subagent
+
+A coding session breaks into **phases** (e.g. grilling → implementation → QA). At each **phase boundary**, you decide what to do with the session before starting the next phase — this decision is one of the fuzziest, most-judgment-heavy parts of AI coding.
+
+Five options at a phase boundary:
+
+| Option | What it does |
+|---|---|
+| **Continue** | Stay in the current session, no context switch |
+| **Clear** | Wipe the context window and start fresh |
+| **Compact** | Compress context, seed a new session with the summary |
+| **Handoff** | Write a markdown file summarizing the session, to pass anywhere |
+| **Subagent** | Spawn a subagent to do the next task and report back |
+
+**Decision tree**, walked in order:
+
+1. **Can you continue in the current session?** Yes if the next phase needs the current context as a rich [primary source](#hallucination) (e.g. implementation right after grilling — compacting would swap it for a lossier secondary source for no reason), or if there's simply enough [smart zone](#smart-zone--dumb-zone) budget left for a small next task. If yes → continue, skip the rest of the tree.
+2. **Is everything in this session irrelevant to the next task?** If the whole session is disposable, **clear** — it's instant (just deletes) and maximizes smart zone. Only safe when you're sure nothing (including reasoning from an *earlier* phase, not just the one that just ended) will be needed later.
+3. **Do you need to hand off?** Handoff is narrow: use it to pass work to another agent/directory/colleague, or to fork off a side task discovered mid-phase without derailing the current session. Otherwise, skip.
+4. **Can the task be done AFK (away from keyboard)** — well-scoped enough that the agent needs zero intervention from you (e.g. an automated review of an implementation)? If yes → **subagent**: it runs in its own context window and never touches the main session's budget, even though the subagent itself may burn a lot of tokens.
+5. **Default: compact.** If context is relevant, you're not handing off, and the task needs you present, compacting is the fallback — compress and keep going with a fresh, smaller window.
+
+These are subjective, taste-driven calls, not hard rules — the underlying question at every boundary is always "what's the cheapest way to keep only what's relevant into the next phase?"
+
 ---
 
 ## Getting to know Claude
