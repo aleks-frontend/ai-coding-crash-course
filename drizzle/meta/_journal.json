@@ -43,6 +43,13 @@
       "when": 1785852019957,
       "tag": "0005_tricky_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1789622557761,
+      "tag": "0006_milky_white_queen",
+      "breakpoints": true
     }
   ]
 }
