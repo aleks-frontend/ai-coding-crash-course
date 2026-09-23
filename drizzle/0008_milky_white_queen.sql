@@ -1,0 +1,1 @@
+ALTER TABLE `courses` ADD `language` text DEFAULT 'en' NOT NULL;
