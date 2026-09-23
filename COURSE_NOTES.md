@@ -229,6 +229,23 @@ Five options at a phase boundary:
 
 These are subjective, taste-driven calls, not hard rules — the underlying question at every boundary is always "what's the cheapest way to keep only what's relevant into the next phase?"
 
+### Pruning
+
+Steering files like `AGENTS.md` only ever grow — adding a rule feels cheap and safe, removing one feels like erasing someone's work, so a file climbs from 5 lines to 500 to 1,000 with nothing ever coming back out. **Pruning** = going back through the file on a regular basis and cutting stuff out, critical for keeping context load down.
+
+Three tests to run over every line — fails any one and it's not earning its place in the context window:
+
+| Test | Definition | Fix when it fails |
+|---|---|---|
+| **Single Source of Truth** | Every fact should live in exactly one authoritative place | Keep one copy, point at it from everywhere else |
+| **Sediment** | A line that was true once but isn't true now (library got swapped, bug got fixed, convention changed) | Cut it, or put what survives behind a pointer |
+| **No-Op** | An instruction that changes nothing vs. the model's default behavior | Delete it — test by removing the line and checking if output actually changes |
+
+- Duplication costs three ways: **maintenance** (fix the same fact in N places), **context load** (paying tokens to say the same thing twice), and **prominence** (a duplicated fact outweighs its real importance and drowns out things said only once).
+- Sediment is dangerous precisely because it was once correct — that's what makes it psychologically hard to delete, even once the world it describes no longer exists.
+- A no-op can be true and on-topic and still not worth a token — e.g. telling an `/implement` skill to "write a detailed commit message" when the model would already do that by default. Moving a no-op into `AGENTS.md` makes it worse, not better: it now costs tokens on every request instead of only when the skill fires, while still changing nothing.
+- No-ops aren't free just because they're harmless — they still sit in context and dilute the surrounding lines that do matter.
+
 ---
 
 ## Getting to know Claude
