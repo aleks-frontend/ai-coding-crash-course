@@ -246,21 +246,6 @@ Three tests to run over every line — fails any one and it's not earning its pl
 - A no-op can be true and on-topic and still not worth a token — e.g. telling an `/implement` skill to "write a detailed commit message" when the model would already do that by default. Moving a no-op into `AGENTS.md` makes it worse, not better: it now costs tokens on every request instead of only when the skill fires, while still changing nothing.
 - No-ops aren't free just because they're harmless — they still sit in context and dilute the surrounding lines that do matter.
 
-### Specs and Tickets: Tackling Massive Tasks
-
-Small features/bug fixes fit entirely inside one [session](#sessions-and-the-context), staying in the [smart zone](#smart-zone--dumb-zone) start to finish. But some work — a refactor touching every layer, or anything obviously bigger than a single [context window](#sessions-and-the-context) — has to be **decomposed**: broken into chunks, each sized to fit one session's smart zone, the same way devs have always broken down big work.
-
-This raises a planning problem earlier lessons hadn't needed: up to now, a plan only had to last one context window. Multi-session work needs two documents instead:
-
-| Document | Role | Analogy |
-|---|---|---|
-| **Spec** | Describes the *destination* — what the finished work looks like. Passed to every session so each one knows how its piece contributes to the final goal, and used at the end to review whether the work actually got there. | Where you're going |
-| **Ticket** | One per chunk of work sized to fit a smart zone. An implementation plan for its slice of the spec. | One leg of the journey |
-
-- Spec alone isn't enough — it says where you're headed but not how to split the journey into session-sized steps. Tickets alone aren't enough either — without a spec there's no destination to check the finished work against.
-- This scales: specs with **30 tickets** underneath are called out as having worked out fine.
-- Ties back to the [clear/compact/handoff/subagent decision tree](#clear-compact-handoff-or-subagent) — a spec+tickets setup is the planning layer that sits above those per-boundary decisions when a project is known upfront to span many sessions.
-
 ---
 
 ## Getting to know Claude
@@ -418,4 +403,23 @@ Full example config:
 
 - The specific list is agent-specific (this is all Claude Code) — the transferable habit is: **audit your harness's payload, deny/disable whatever you don't actually use**, since it's pure cost (tokens + potential distraction) for zero benefit.
 - None of this shrinks the context *window* — it shrinks how much of the window is pre-consumed by setup before you've typed a word, leaving more room in the [smart zone](#smart-zone--dumb-zone).
+
+---
+
+## Shipping
+
+### Specs and Tickets: Tackling Massive Tasks
+
+Small features/bug fixes fit entirely inside one [session](#sessions-and-the-context), staying in the [smart zone](#smart-zone--dumb-zone) start to finish. But some work — a refactor touching every layer, or anything obviously bigger than a single [context window](#sessions-and-the-context) — has to be **decomposed**: broken into chunks, each sized to fit one session's smart zone, the same way devs have always broken down big work.
+
+This raises a planning problem earlier lessons hadn't needed: up to now, a plan only had to last one context window. Multi-session work needs two documents instead:
+
+| Document | Role | Analogy |
+|---|---|---|
+| **Spec** | Describes the *destination* — what the finished work looks like. Passed to every session so each one knows how its piece contributes to the final goal, and used at the end to review whether the work actually got there. | Where you're going |
+| **Ticket** | One per chunk of work sized to fit a smart zone. An implementation plan for its slice of the spec. | One leg of the journey |
+
+- Spec alone isn't enough — it says where you're headed but not how to split the journey into session-sized steps. Tickets alone aren't enough either — without a spec there's no destination to check the finished work against.
+- This scales: specs with **30 tickets** underneath are called out as having worked out fine.
+- Ties back to the [clear/compact/handoff/subagent decision tree](#clear-compact-handoff-or-subagent) — a spec+tickets setup is the planning layer that sits above those per-boundary decisions when a project is known upfront to span many sessions.
 
